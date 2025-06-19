@@ -1,5 +1,5 @@
-import React from "react";
-import { useState } from "react";
+
+import React, { useCallback, useEffect, useState} from "react";
 
 import MoviesList from "./components/MoviesList";
 import "./App.css";
@@ -51,7 +51,8 @@ function App() {
 //   setMovies(transformedMovie);
 //  };
 
-async function GOTMoviesHandler () {
+
+const GOTMoviesHandler = useCallback(async () => {
   setIsLoading(true);
   setError(null);
 
@@ -84,7 +85,12 @@ async function GOTMoviesHandler () {
     setError(error.message);
   }
   setIsLoading(false); 
-}
+}, []);
+
+useEffect(()=>{
+  GOTMoviesHandler()
+}, [GOTMoviesHandler]);
+
 
  let content = 'No movie found';
 
