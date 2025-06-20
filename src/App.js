@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useState} from "react";
 
 import MoviesList from "./components/MoviesList";
+import AddMovie from "./components/AddMovie";
 import "./App.css";
 
 function App() {
@@ -57,29 +58,43 @@ const GOTMoviesHandler = useCallback(async () => {
   setError(null);
 
   try {
-      const response = await fetch ('https://imdb8.p.rapidapi.com/auto-complete?q=game%20of%20thr', {
-        method: 'GET',
-        headers: {
-          'x-rapidapi-key': '0da7802b0fmshb9d92efa9e9f93cp12c6efjsne0b0e3f6e5c4',
-          'x-rapidapi-host': 'imdb8.p.rapidapi.com'
-          }
-      });
+      const response = await fetch ('https://react-http-5e364-default-rtdb.firebaseio.com/movies.json', 
+      //   {
+      //   method: 'GET',
+      //   headers: {
+      //     'x-rapidapi-key': '0da7802b0fmshb9d92efa9e9f93cp12c6efjsne0b0e3f6e5c4',
+      //     'x-rapidapi-host': 'imdb8.p.rapidapi.com'
+      //     }
+      // }
+    );
       
       if(!response.ok){
         throw new Error('something went wrong!')
       }
       
       const data = await response.json();
-      console.log(data.d);
+      console.log(data);
 
-      const tranformedMovie = data.d.map(movieData => {
-        return{
-          id: movieData.id,
-          title: movieData.l,
-          openingText: movieData.s
-        }
-      });
-      setMovies(tranformedMovie);
+      const loadedMovie = [];
+      
+      for(const key in data) {
+        loadedMovie.push({
+          id: key,
+          title: data[key].title,
+          openingText: data[key].openingText,
+          releaseDate: data[key].releaseDate
+        })
+      }
+
+      // const tranformedMovie = data.d.map(movieData => {
+      //   return{
+      //     id: movieData.id,
+      //     title: movieData.l,
+      //     openingText: movieData.s,
+      //     releaseDate: movieData.y
+      //   }
+      // });
+      setMovies(loadedMovie);
 
   } catch (error) {
     setError(error.message);
@@ -91,6 +106,18 @@ useEffect(()=>{
   GOTMoviesHandler()
 }, [GOTMoviesHandler]);
 
+async function addMovieHandler(movie) {
+  const response = await fetch ('https://react-http-5e364-default-rtdb.firebaseio.com/movies.json',{
+    method: 'POST',
+    body: JSON.stringify(movie),
+    headers: {
+      'Content-Type': 'application/json'
+    },
+  });
+
+  const data = await response.json();
+    console.log(movie);
+}
 
  let content = 'No movie found';
 
@@ -108,6 +135,9 @@ useEffect(()=>{
 
   return (
     <React.Fragment>
+      <section>
+        <AddMovie onAddMovie={addMovieHandler} />
+      </section>
       <section>
         <button onClick={GOTMoviesHandler}>Fetch Movies</button>
       </section>
